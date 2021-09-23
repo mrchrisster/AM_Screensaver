@@ -7,7 +7,7 @@ class UserConfig {
     
 
 	</ label="Blank Screen Start Command", help="The command line to run when blank screen (low power) mode starts (to turn the monitor off, for example).", order=9 />
-	screensaver_start_cmd=system( "start \"\" \"c:\\games\\attractmode\\Screensaver\\screensaver.exe\"" );
+	screensaver_start_cmd=system( "start \"\" \"c:\\games\\attractmode\\Screensaver\\Screensaver.ahk\"" );
 
 
     
