@@ -1,41 +1,62 @@
 #NoEnv
 #Persistent
 #SingleInstance Force
-;#InstallKeybdHook
+
+FormatTime, TimeString
+Process, Close, attract.exe
 
 Random,,%A_TickCount% ; Generate Seed for more randomness
 SetWorkingDir %A_ScriptDir%
 
+; Delete previous log file
+FileDelete,d:\lastgame.txt
 
-timebetween := 90000 ; How long to show each game, define in milliseconds
 
-MameLaunch()
-{
-	global
-	emuexe := "groovymame64_223.exe"
-	file := "..\romlists\Arcade Horizontal.txt"
-	Romset()
-	Process, Close, %emuexe%
-	check := list[Rand(list.MinIndex(), list.MaxIndex())]
-	Run, C:\Games\Emulators\Groovymame\groovymame64_223.exe -keyboardprovider win32 -sound none -inipath C:\Games\Emulators\Groovymame\ -homepath C:\Games\Emulators\Groovymame\ %check%,,Hide
-	sleep %timebetween%
-}
+timebetween := 130000 ; How long to show each game, define in milliseconds
 
-RocketLaunch()
+RetroLaunch()
 {
 	global	
 	emuexe := "retroarch.exe"
+	; Attract Mode generated romlists are used for input
 	file := "..\romlists\" sys ".txt"
 	Romset()
+	Romcheck()
 	SendLevel, 1
 	Send {Esc}
-	check := list[Rand(list.MinIndex(), list.MaxIndex())]
+	sleep 1500
+	Send {Esc}
+	Process, Close, %emuexe%
+
+	FileAppend,%sys% - %check% (%TimeString%)`n,d:\lastgame.txt
 	sleep 2000
-	Run, C:\Games\RocketLauncher\RocketLauncher.exe -f "C:\Games\AttractMode\attract.exe" -p "AttractMode" -s "%sys%" -r "%check%"
+	SetWorkingDir, "C:\Games\Emulators\Retroarch"
+	Run, C:\Games\Emulators\Retroarch\retroarch.exe --config C:\Games\Emulators\RetroArch\retroarchss.cfg -L "%libcore%" "C:\Games\Games\%sys%\%check%.%end%"
 	sleep %timebetween%
 }
 
-; Attract Mode generated romlists are used for input
+Daphne()
+{
+	global	
+	; Attract Mode generated romlists are used for input
+	file := "..\romlists\" sys ".txt"
+	Romset()
+	Romcheck()
+	SendLevel, 1
+	Send {Esc}
+	sleep 1500
+	Send {Esc}
+	Process, Close, groovymame64_223.exe
+	Process, Close, %emuexe%
+
+	FileAppend,%sys% - %check% (%TimeString%)`n,d:\lastgame.txt
+	sleep 2000
+	Run, C:\Games\Emulators\Daphne\daphne.exe %check% vldp -blank_searches -noserversend -fastboot -useoverlaysb 1  -fullscreen -x 640 -y 480 -homedir . -nosound -framefile "C:\Games\Emulators\%sys%\framefile\%check%.%end%"
+	sleep %timebetween%
+}
+
+
+
 
 Romset()
 {
@@ -50,6 +71,21 @@ Romset()
 		list.push(LineArray[1])
 	}
 }
+
+; Make sure check variable is not empty
+Romcheck()
+{	
+	global
+	Loop
+		{
+		check := list[Rand(list.MinIndex(), list.MaxIndex())]
+			If (check = "")
+				continue
+			else
+				break
+		}
+}
+
 
 rand(min, max) 
 {
@@ -66,51 +102,92 @@ Loop 16 {
     }
 }
 
+Hotkey, 1, DismissScreensaver
 
 SetTimer, Relaunch, 1000
 return
 
 Relaunch:
 
-Random, rand, 1, 8
+;Random, rand, 5, 5
+Random, rand, 1, 11
 	If (rand = 1)
 	{
 		sys := "Super Nintendo Entertainment System"
-		RocketLaunch()
+		end := "sfc"
+		libcore := "C:\Games\Emulators\RetroArch\cores\bsnes_mercury_balanced_libretro.dll"
+		RetroLaunch()
 	}
 	else if (rand = 2)
 	{
 		sys := "Sega Genesis"
-		RocketLaunch()
+		end := "md"
+		libcore := "C:\Games\Emulators\RetroArch\cores\genesis_plus_gx_libretro.dll"
+		RetroLaunch()
 	}
 	else if (rand = 3)
 	{
 		sys := "Sega Dreamcast"
-		RocketLaunch()
+		end := "chd"
+		libcore := "C:\Games\Emulators\RetroArch\cores\flycast_libretro.dll"		
+		RetroLaunch()
 	}
 	else if (rand = 4)
 	{
 		sys := "Sony Playstation"
-		RocketLaunch()	
+		end := "chd"
+		libcore := "C:\Games\Emulators\RetroArch\cores\duckstation_libretro.dll"
+		RetroLaunch()	
 	}
 	else if (rand = 5)
 	{
-		MameLaunch()	
+		sys := "Mame Horizontal"
+		end := "zip"
+		libcore := "C:\Games\Emulators\RetroArch\cores\mame_libretro.dll"
+		RetroLaunch()	
+
+	
 	}
 	else if (rand = 6)
 	{
 		sys := "Sammy Atomiswave"
-		RocketLaunch()	
+		end := "zip"
+		libcore := "C:\Games\Emulators\RetroArch\cores\flycast_libretro.dll"
+		RetroLaunch()	
 	}
 	else if (rand = 7)
 	{
 		sys := "Panasonic 3DO"
-		RocketLaunch()	
+		end := "chd"
+		libcore := "C:\Games\Emulators\RetroArch\cores\4do_libretro.dll"
+		RetroLaunch()	
 	}
 	else if (rand = 8)
 	{
 		sys := "Daphne"
-		RocketLaunch()	
+		end := "txt"
+		Daphne()	
+	}
+	else if (rand = 9)
+	{
+		sys := "Sega Saturn"
+		end := "chd"
+		libcore := "C:\Games\Emulators\RetroArch\cores\mednafen_saturn_libretro.dll"
+		RetroLaunch()	
+	}
+	else if (rand = 10)
+	{
+		sys := "Nintendo 64"
+		end := "n64"
+		libcore := "C:\Games\Emulators\RetroArch\cores\mupen64plus_next_libretro.dll"
+		RetroLaunch()	
+	}
+	else if (rand = 11)
+	{
+		sys := "Nintendo Gamecube"
+		end := "gcz"
+		libcore := "C:\Games\Emulators\RetroArch\cores\dolphin_libretro.dll"
+		RetroLaunch()	
 	}
 return		
 
@@ -121,11 +198,23 @@ DismissScreensaver()
 		global
 		Process, Close, attract.exe
 		Process, Close, %emuexe%
-		FileCopy, ..\attract-nolaunch.cfg, ..\attract.cfg, 1
+		sleep 150
+		Send {Esc}
+		
+		; don't start a game on startup
+		FileRead, text, ..\attract.cfg
+		startupnolaunch := "startup_mode         default"
+		startuplaunch := "startup_mode         launch_last_game"
+		newtext := strreplace(text, startuplaunch, startupnolaunch)
+		filedelete, ..\attract.cfg
+		fileappend, %newtext%, ..\attract.cfg
 		sleep 500
 		Run, ..\attract.exe --config c:\games\attractmode,,Hide
-		sleep 5000
-		FileCopy, ..\attract-launch.cfg, ..\attract.cfg, 1
+		;sleep 5000
+		;newtext := strreplace(text, startupnolaunch, startuplaunch)
+		;filedelete, ..\attract.cfg
+		;fileappend, %newtext%, ..\attract.cfg
+		
 		ExitApp
 	}
 
